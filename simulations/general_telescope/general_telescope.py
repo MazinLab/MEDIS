@@ -64,7 +64,7 @@ def general_telescope(empty_lamda, grid_size, PASSVALUE):
 
     # Both offsets and scales the companion wavefront
     if wfo.wf_collection.shape[1] > 1:
-        wfo.loop_collection(opx.offset_companion)
+        wfo.loop_collection(opx.offset_companion, step=PASSVALUE['iter'])
         wfo.loop_collection(proper.prop_circular_aperture,
                             **{'radius': tp.entrance_d / 2})  # clear inside, dark outside
 
@@ -124,8 +124,6 @@ def general_telescope(empty_lamda, grid_size, PASSVALUE):
     # Coronagraph
     ########################################
     # there are additional un-aberated optics in the coronagraph module
-
-    wfo.loop_collection(convo)
 
     wfo.loop_collection(coronagraph, occulter_mode=tp.cg_type, plane_name='coronagraph')
 
