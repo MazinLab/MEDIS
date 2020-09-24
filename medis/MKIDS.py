@@ -931,19 +931,25 @@ class Camera():
         for ip, p in enumerate(packets):
             x = np.int_(p[2])
             y = np.int_(p[3])
-            # print(x,y,p,'lol')
-            stem[x][y].append([p[0], p[1]])
+            if len(p) == 5:
+                stem[x][y].append([p[0], p[1], p[4]])
+            else:
+                stem[x][y].append([p[0], p[1]])
             if len(packets) >= 1e7 and ip % 10000 == 0: misc.progressBar(value=ip, endvalue=len(packets))
         # print cube[x][y]
         # cube = time_sort(cube)
         return stem
 
     def ungroup(self, stem):
-        photons = np.empty((0, 4))
+        if mp.store_label:
+            photons = np.empty((0, 5))
+        else:
+            photons = np.empty((0, 4))
         for x in range(mp.array_size[1]):
             for y in range(mp.array_size[0]):
                 if len(stem[x][y]) > 0:
                     events = np.array(stem[x][y])
+
                     xy = [[x, y]] * len(events) if len(events.shape) == 2 else [x, y]
                     events = np.append(events, xy, axis=1)
                     photons = np.vstack((photons, events))
@@ -951,6 +957,7 @@ class Camera():
                     # timesort = np.argsort(events[:, 0])
                     # events = events[timesort]
                     # sep = events[:, 0] - np.roll(events[:, 0], 1, 0)
+                    print(x,y)
         return photons.T
 
     def get_ideal_photons(self, cube, step):
