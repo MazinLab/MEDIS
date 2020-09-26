@@ -441,12 +441,22 @@ class Camera():
         self.photons[0] = table[:]['Time'] / 1e6
         self.photons[1] = table[:]['Wavelength']
 
-        rev_beam = []
-        [[rev_beam.append([c, r]) for r in range(mp.array_size[1])] for c in range(mp.array_size[0])]
-        rev_beam = np.array(rev_beam)
-        self.photons[2:] = (rev_beam[table[:]['ResID']].T)
+        #todo make this explicit
+        try:
+            rev_beam = []
+            [[rev_beam.append([c, r]) for r in range(mp.array_size[1])] for c in range(mp.array_size[0])]
+            rev_beam = np.array(rev_beam)
+            self.photons[2:] = (rev_beam[table[:]['ResID']].T)
+        except IndexError:
+            beammap = h5file.root.BeamMap.Map[:]
+            flatbeam = beammap.flatten()
+            beamsorted = np.argsort(flatbeam)
+            ind = np.searchsorted(flatbeam[beamsorted], table[:]['ResID'])
+            xy = np.unravel_index(beamsorted[ind], beammap.shape)
+            self.photons[2:] = xy[::-1]
+
         self.rebinned_cube = None
-        print(f"Loaded photon list from table at{h5file}")
+        print(f"Loaded photon list from table at {h5file}")
 
         return {'photons': self.photons}
 
